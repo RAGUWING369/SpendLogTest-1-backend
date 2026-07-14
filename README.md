@@ -26,7 +26,7 @@ python -m venv .venv
 source .venv/bin/activate
 
 # Activate — Windows (Command Prompt)
-.venv\Scripts\activate
+.venv\Scripts\activate.bat
 
 # Activate — Windows (PowerShell)
 .venv\Scripts\Activate.ps1
@@ -42,7 +42,7 @@ pip install -r requirements.txt
 
 ```bash
 cp .env.example .env
-# Edit .env — fill in DATABASE_URL and JWT_SECRET at minimum
+# Edit .env — fill in DATABASE_URL and SECRET_KEY at minimum
 ```
 
 ### 5. Run database migrations
@@ -57,8 +57,8 @@ alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
-The API is available at `http://localhost:8000`.
-OpenAPI docs: `http://localhost:8000/api/v1/docs`
+The API is available at `http://localhost:8000`.  
+OpenAPI docs: `http://localhost:8000/docs`  
 Health check: `http://localhost:8000/api/v1/health`
 
 ## Running Tests
@@ -82,13 +82,13 @@ flake8 app/
 
 ## Required Environment Variables
 
-See `.env.example` (created in TASK-002) for the full list with placeholder values.
+See `.env.example` for the full list with placeholder values. Copy it to `.env` before starting the server.
 
 | Variable | Description |
 |----------|-------------|
-| `DATABASE_URL` | PostgreSQL connection string (`postgresql+asyncpg://...`) |
-| `JWT_SECRET` | 32+ character random string for JWT signing |
-| `JWT_ALGORITHM` | JWT algorithm — default `HS256` |
-| `CORS_ORIGINS` | Comma-separated allowed origins (e.g. `http://localhost:5173`) |
-| `ENVIRONMENT` | `development` or `production` |
-| `SENTRY_DSN` | Optional — Sentry error tracking DSN (leave blank to disable) |
+| `DATABASE_URL` | PostgreSQL async connection string (`postgresql+asyncpg://user:pass@host/dbname`) |
+| `SECRET_KEY` | 32+ character random string used to sign JWT tokens |
+| `ALGORITHM` | JWT signing algorithm — default `HS256` |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Access token lifetime in minutes — default `30` |
+| `REFRESH_TOKEN_EXPIRE_DAYS` | Refresh token lifetime in days — default `7` |
+| `FRONTEND_URL` | Frontend origin allowed by CORS (e.g. `http://localhost:5173`) |

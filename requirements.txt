@@ -12,9 +12,10 @@ pydantic[email]==2.8.2
 pydantic-settings==2.3.4
 
 # ── Authentication ────────────────────────────────────────────────────────────
+# NOTE: bcrypt is used directly (no passlib wrapper) — passlib 1.7.4 is
+# incompatible with bcrypt 4.x at runtime (AttributeError on __about__).
 python-jose[cryptography]==3.3.0
 bcrypt==4.2.0
-passlib[bcrypt]==1.7.4
 
 # ── HTTP client (used in tests and health-check utilities) ────────────────────
 httpx==0.27.0
