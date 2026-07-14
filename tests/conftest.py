@@ -14,9 +14,6 @@ This means every `async def test_*` function is automatically treated
 as an asyncio test without needing the @pytest.mark.asyncio decorator.
 """
 
-import pytest
-
-
 # ---------------------------------------------------------------------------
 # Placeholder: no fixtures needed until TASK-004 (app scaffold) is complete.
 # The conftest is kept in the repository so that:

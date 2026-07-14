@@ -3,10 +3,12 @@ Environment sanity tests — TASK-001: Python virtual environment setup.
 
 These tests verify that the development environment is correctly configured:
   1. Python version meets the minimum requirement (3.12+)
-  2. All packages from requirements.txt are importable (confirms pip install ran cleanly)
+  2. All packages from requirements.txt are importable
+     (confirms pip install ran cleanly)
   3. No package version conflicts exist (bcrypt 4.x, pydantic v2)
   4. .gitignore correctly excludes .venv/ and .env while allowing .env.example
-  5. .env.example exists at the repo root (so `cp .env.example .env` works on fresh clone)
+  5. .env.example exists at the repo root
+     (so `cp .env.example .env` works on fresh clone)
 
 Run with:
     pytest tests/test_environment.py -v
@@ -45,7 +47,7 @@ def test_python_version_is_312_or_higher():
 
 
 def test_fastapi_importable():
-    """fastapi 0.111.x must be importable — confirms pip install included the package."""
+    """fastapi 0.111.x must be importable — confirms pip install ran."""
     fastapi = importlib.import_module("fastapi")
     assert fastapi is not None, "fastapi import returned None"
 
@@ -213,9 +215,9 @@ def test_env_example_contains_all_required_variables():
         "FRONTEND_URL",
     ]
     missing = [var for var in required_variables if var not in content]
-    assert not missing, (
-        f"The following required variables are missing from .env.example: {missing}"
-    )
+    assert (
+        not missing
+    ), f"The following required variables are missing from .env.example: {missing}"
 
 
 def test_env_example_uses_placeholder_values_not_real_secrets():
@@ -231,9 +233,8 @@ def test_env_example_uses_placeholder_values_not_real_secrets():
         if line.startswith("SECRET_KEY="):
             value = line.split("=", 1)[1].strip()
             # A real hex secret would be exactly 64 lowercase hex chars
-            is_real_hex_secret = (
-                len(value) == 64
-                and all(c in "0123456789abcdef" for c in value)
+            is_real_hex_secret = len(value) == 64 and all(
+                c in "0123456789abcdef" for c in value
             )
             assert not is_real_hex_secret, (
                 "SECRET_KEY in .env.example appears to be a real secret. "
