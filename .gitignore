@@ -1,0 +1,55 @@
+# ── Python virtual environment ──────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── Python bytecode ──────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# ── Distribution / packaging ─────────────────────────────────────────────────
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+wheels/
+*.whl
+
+# ── Test artefacts ───────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.lcov
+
+# ── Type checkers / linters ──────────────────────────────────────────────────
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+
+# ── Environment / secrets — NEVER commit real values ─────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── IDE and OS artefacts ─────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Alembic generated files (versions directory is committed; cache is not) ──
+alembic/__pycache__/
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
