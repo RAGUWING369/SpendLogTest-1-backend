@@ -1,0 +1,37 @@
+[tool.pytest.ini_options]
+# Automatically treat all async test functions as asyncio coroutines.
+# This removes the need for the @pytest.mark.asyncio decorator on every test.
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "--tb=short"
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.venv
+  | \.git
+  | __pycache__
+  | alembic/versions
+)/
+'''
+
+[tool.isort]
+profile = "black"
+known_first_party = ["app"]
+skip = [".venv", "alembic/versions"]
+
+[tool.coverage.run]
+# Coverage source is set to "app" — the application package.
+# TASK-001 does not create app/ yet; coverage thresholds will be enforced from
+# TASK-004 onwards once app/ exists and has measurable source lines.
+source = ["app"]
+omit = ["tests/*", "alembic/*"]
+
+[tool.coverage.report]
+show_missing = true
+# fail_under is intentionally not set here: it is enforced per-module in the CI
+# pipeline command (--cov-fail-under=80 for general modules, 90 for auth/expense).
+# Setting it here globally would cause false failures when app/ has no source yet.
