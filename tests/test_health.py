@@ -6,11 +6,9 @@ Covers:
 - CORS: unlisted origin is not reflected back
 """
 
-import pytest
 from httpx import ASGITransport, AsyncClient
 
 
-@pytest.mark.asyncio
 async def test_health_returns_200() -> None:
     """GET /api/v1/health must return HTTP 200 OK."""
     from app.main import app
@@ -23,7 +21,6 @@ async def test_health_returns_200() -> None:
     assert response.status_code == 200
 
 
-@pytest.mark.asyncio
 async def test_health_returns_correct_body() -> None:
     """GET /api/v1/health must return the JSON body {"status": "ok"}."""
     from app.main import app
@@ -36,7 +33,6 @@ async def test_health_returns_correct_body() -> None:
     assert response.json() == {"status": "ok"}
 
 
-@pytest.mark.asyncio
 async def test_health_content_type_is_json() -> None:
     """GET /api/v1/health must return Content-Type: application/json."""
     from app.main import app
@@ -49,7 +45,6 @@ async def test_health_content_type_is_json() -> None:
     assert "application/json" in response.headers["content-type"]
 
 
-@pytest.mark.asyncio
 async def test_cors_allows_configured_frontend_url() -> None:
     """CORS must reflect the configured FRONTEND_URL in the response header."""
     from app.main import app
@@ -68,7 +63,6 @@ async def test_cors_allows_configured_frontend_url() -> None:
     )
 
 
-@pytest.mark.asyncio
 async def test_cors_does_not_reflect_unlisted_origin() -> None:
     """CORS must not add allow-origin header for origins not in the allow-list."""
     from app.main import app
@@ -88,7 +82,6 @@ async def test_cors_does_not_reflect_unlisted_origin() -> None:
     )
 
 
-@pytest.mark.asyncio
 async def test_health_endpoint_exists_at_correct_path() -> None:
     """Health check must live at /api/v1/health — not /health or /api/health."""
     from app.main import app
