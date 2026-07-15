@@ -2,7 +2,7 @@
 
 Configures:
 - Structured JSON logging (must happen before any logger.xxx calls)
-- CORS middleware (allow-list: FRONTEND_URL only)
+- CORS middleware (explicit origin, method, and header allow-lists per security arch)
 - OpenAPI docs (disabled in production per ARCH-INF-011)
 - All API routers under /api/v1
 """
@@ -64,14 +64,20 @@ app = FastAPI(
     redoc_url=_redoc_url,
 )
 
-# CORS: only the configured frontend origin is allowed.
-# All other origins are silently rejected by the browser.
+# CORS: exact allow-list per security architecture (section: Network Security Controls).
+# Explicit methods and headers enforce least-privilege; credentials mode is disabled
+# because the SPA authenticates via Authorization headers, not cookies.
+# The Vite dev origin is listed explicitly so local developers can reach a staging
+# backend even when FRONTEND_URL points to the production URL.
+_CORS_ALLOWED_METHODS = ["DELETE", "GET", "OPTIONS", "PATCH", "POST"]
+_CORS_ALLOWED_HEADERS = ["Authorization", "Content-Type"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.FRONTEND_URL],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=[settings.FRONTEND_URL, "http://localhost:5173"],
+    allow_credentials=False,
+    allow_methods=_CORS_ALLOWED_METHODS,
+    allow_headers=_CORS_ALLOWED_HEADERS,
 )
 
 app.include_router(health.router, prefix="/api/v1")

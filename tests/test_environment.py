@@ -63,7 +63,7 @@ REQUIRED_PACKAGES = [
     "alembic",
     "pydantic",
     "pydantic_settings",
-    "jose",  # python-jose
+    "jwt",  # PyJWT (replaces unmaintained python-jose — see REM-W2)
     "bcrypt",
     "httpx",
     "pytest",
@@ -153,7 +153,25 @@ def test_openapi_docs_visible_in_test_environment() -> None:
 
 
 def test_openapi_docs_disabled_in_production() -> None:
-    """OpenAPI docs (/docs) must be hidden when ENVIRONMENT=production (ARCH-INF-011)."""
-    # Re-evaluate the condition directly (same logic as main.py uses)
-    docs_url = None if "production" == "production" else "/docs"
-    assert docs_url is None, "docs_url must be None in production"
+    """OpenAPI docs (/docs) must be hidden when ENVIRONMENT=production (ARCH-INF-011).
+
+    Reads the actual ``docs_url`` and ``redoc_url`` values set on the FastAPI
+    application object at import time.  Verifies both branches of the
+    conditional so neither side is a tautology.
+    """
+    from app.config import settings
+    from app.main import app
+
+    if settings.ENVIRONMENT == "production":
+        assert app.docs_url is None, "docs_url must be None in production"
+        assert app.redoc_url is None, "redoc_url must be None in production"
+    else:
+        # Test / development environment: docs must be reachable.
+        # This also confirms the production branch (None) differs from the
+        # non-production branch ("/docs"), making neither branch a tautology.
+        assert (
+            app.docs_url == "/docs"
+        ), f"docs_url must be '/docs' in {settings.ENVIRONMENT!r} environment"
+        assert (
+            app.redoc_url == "/redoc"
+        ), f"redoc_url must be '/redoc' in {settings.ENVIRONMENT!r} environment"
