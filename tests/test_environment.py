@@ -1,10 +1,16 @@
 """
 Tests for TASK-001: Python virtual environment setup.
 
-Verifies that every package listed in requirements.txt is importable, proving
-that `pip install -r requirements.txt` completed successfully in the active
-Python environment. These tests are intentionally lightweight — they guard
-against a missing or broken install, not against package behaviour.
+Verifies that every package listed in requirements.txt and requirements-dev.txt
+is importable, proving that `pip install -r requirements-dev.txt` completed
+successfully in the active Python environment. These tests are intentionally
+lightweight — they guard against a missing or broken install, not against
+package behaviour.
+
+Dependency file layout:
+  requirements.txt     — production runtime dependencies only.
+  requirements-dev.txt — dev/test dependencies; extends requirements.txt via
+                         the '-r requirements.txt' directive.
 """
 
 import importlib
@@ -18,9 +24,9 @@ import pytest
 
 _REPO_ROOT = pathlib.Path(__file__).parent.parent
 
-# Top-level module names to import for each requirements.txt entry.
+# Top-level module names to import for each requirements.txt (production) entry.
 # Using the public import name, not the distribution name (e.g. "jwt" not "PyJWT").
-_REQUIRED_PACKAGES: list[tuple[str, str]] = [
+_PRODUCTION_PACKAGES: list[tuple[str, str]] = [
     ("fastapi", "FastAPI web framework"),
     ("uvicorn", "ASGI server"),
     ("pydantic", "Data validation (Pydantic v2)"),
@@ -30,7 +36,11 @@ _REQUIRED_PACKAGES: list[tuple[str, str]] = [
     ("alembic", "Alembic database migrations"),
     ("jwt", "PyJWT authentication library"),
     ("bcrypt", "bcrypt password hashing"),
-    ("httpx", "HTTPX async HTTP client"),
+]
+
+# Top-level module names to import for each requirements-dev.txt entry.
+_DEV_PACKAGES: list[tuple[str, str]] = [
+    ("httpx", "HTTPX async HTTP client (test transport)"),
     ("pytest", "pytest test runner"),
     ("pytest_asyncio", "pytest-asyncio plugin"),
     ("black", "Black code formatter"),
@@ -43,9 +53,16 @@ _REQUIRED_PACKAGES: list[tuple[str, str]] = [
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("module_name,description", _REQUIRED_PACKAGES)
-def test_required_package_is_importable(module_name: str, description: str) -> None:
-    """Each entry in requirements.txt must be importable after `pip install`."""
+@pytest.mark.parametrize("module_name,description", _PRODUCTION_PACKAGES)
+def test_production_package_is_importable(module_name: str, description: str) -> None:
+    """Each entry in requirements.txt must be importable after `pip install -r requirements.txt`."""
+    module = importlib.import_module(module_name)
+    assert module is not None, f"{description} ({module_name}) could not be imported"
+
+
+@pytest.mark.parametrize("module_name,description", _DEV_PACKAGES)
+def test_dev_package_is_importable(module_name: str, description: str) -> None:
+    """Each entry in requirements-dev.txt must be importable after `pip install -r requirements-dev.txt`."""
     module = importlib.import_module(module_name)
     assert module is not None, f"{description} ({module_name}) could not be imported"
 
@@ -156,9 +173,69 @@ def test_env_example_contains_no_real_secrets() -> None:
 
 
 def test_requirements_txt_exists() -> None:
-    """requirements.txt must be present at the repository root."""
+    """requirements.txt must be present at the repository root (production deps only)."""
     req_file = _REPO_ROOT / "requirements.txt"
     assert req_file.exists(), "requirements.txt is missing from the repository root"
+
+
+def test_requirements_dev_txt_exists() -> None:
+    """requirements-dev.txt must be present at the repository root (dev/test deps)."""
+    req_dev_file = _REPO_ROOT / "requirements-dev.txt"
+    assert (
+        req_dev_file.exists()
+    ), "requirements-dev.txt is missing from the repository root"
+
+
+def test_requirements_dev_txt_references_requirements() -> None:
+    """requirements-dev.txt must extend requirements.txt via '-r requirements.txt'.
+
+    This ensures that installing requirements-dev.txt also installs all
+    production dependencies — developers and CI both get a complete environment
+    with a single install command.
+    """
+    req_dev_file = _REPO_ROOT / "requirements-dev.txt"
+    assert (
+        req_dev_file.exists()
+    ), "requirements-dev.txt is missing from the repository root"
+    content = req_dev_file.read_text(encoding="utf-8")
+    assert "-r requirements.txt" in content, (
+        "requirements-dev.txt must include '-r requirements.txt' so that "
+        "production dependencies are always installed in the dev environment"
+    )
+
+
+def test_requirements_txt_contains_no_dev_only_packages() -> None:
+    """requirements.txt (production) must not contain dev-only packages.
+
+    Packages used only for testing or code quality (pytest, black, httpx, etc.)
+    belong in requirements-dev.txt, not requirements.txt. This keeps the
+    production container image lean and free of test tooling.
+    """
+    req_file = _REPO_ROOT / "requirements.txt"
+    assert req_file.exists(), "requirements.txt is missing from the repository root"
+
+    raw = req_file.read_text(encoding="utf-8")
+    # Strip comments and blank lines; compare lowercase distribution names.
+    dep_lines = [
+        line.split("#")[0].strip().lower()
+        for line in raw.splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    ]
+    dep_content = "\n".join(dep_lines)
+
+    _DEV_ONLY_DISTRIBUTIONS = [
+        "pytest",
+        "black",
+        "isort",
+        "httpx",
+        "pytest-asyncio",
+        "pytest-cov",
+    ]
+    for dist_name in _DEV_ONLY_DISTRIBUTIONS:
+        assert dist_name not in dep_content, (
+            f"requirements.txt must not list '{dist_name}' — "
+            f"dev/test packages belong in requirements-dev.txt"
+        )
 
 
 def test_requirements_txt_contains_pyjwt_not_python_jose() -> None:
