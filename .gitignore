@@ -1,0 +1,41 @@
+# Python virtual environment — never committed
+.venv/
+venv/
+env/
+
+# Environment variable files — contain secrets, never committed
+.env
+.env.local
+.env.*.local
+
+# Python bytecode caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# Test and coverage artefacts
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.xml
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+
+# IDE artefacts
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS artefacts
+.DS_Store
+
+# Alembic — generated migration versions are committed; this excludes nothing
+# (migrations/ is intentionally NOT listed here)
