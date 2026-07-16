@@ -1,0 +1,26 @@
+# SpendLog backend — production runtime dependencies only.
+#
+# Install:  pip install -r requirements.txt
+# DO NOT add development-only packages here (pytest, black, httpx, etc.).
+# Those belong in requirements-dev.txt.
+
+# ── Core Framework ────────────────────────────────────────────────────────────
+fastapi==0.111.1
+uvicorn[standard]==0.29.0
+
+# ── Validation & Settings ─────────────────────────────────────────────────────
+pydantic[email]==2.12.4
+pydantic-settings==2.12.0
+
+# ── Database ──────────────────────────────────────────────────────────────────
+sqlalchemy[asyncio]==2.0.45
+asyncpg==0.29.0
+alembic==1.18.4
+
+# ── Authentication ────────────────────────────────────────────────────────────
+# PyJWT is used instead of python-jose: python-jose 3.3.0 is unmaintained and
+# carries a known algorithm-confusion vulnerability (CVE-2024-33664).
+# PyJWT 2.x enforces the algorithms parameter by default, preventing the same
+# class of attack. The API surface used by this project is identical.
+PyJWT[crypto]==2.13.0
+bcrypt==4.1.3
